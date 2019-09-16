@@ -1,0 +1,15 @@
+package com.stockapp.data.model
+
+enum class StockISIN(val value: String) {
+    APPLE("US0378331005"),
+    TRATON("DE000TRAT0N7"),
+    SWEDBANK("SE0000242455"),
+    ATT("US2550400840"),
+    INTEL("US4581401001"),
+    AMAZON("US0231351067"),
+    NETFLIX("US64110L1061"),
+    MONSTER("US61174X1090"),
+    BROADCOM("US8716071076"),
+    FENERBAHCE("TREFBAH00019")
+
+}

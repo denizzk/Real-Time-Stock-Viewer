@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="stock_trend_img_height">24dp</dimen>
+    <dimen name="stock_trend_img_width">24dp</dimen>
+
+    <dimen name="stock_origin_img_height">24dp</dimen>
+    <dimen name="stock_origin_img_width">24dp</dimen>
+
+    <dimen name="text_size">16dp</dimen>
+</resources>
