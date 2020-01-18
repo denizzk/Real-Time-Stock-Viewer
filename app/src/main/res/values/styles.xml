@@ -9,7 +9,7 @@
     </style>
 
     <style name="stock_item_text_style" parent="android:Widget.TextView">
-        <item name="android:height">32dp</item>
+        <item name="android:height">@dimen/xxlarge</item>
         <item name="android:textColor">@color/lightGray</item>
     </style>
 

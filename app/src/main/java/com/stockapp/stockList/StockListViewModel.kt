@@ -7,13 +7,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.stockapp.data.model.StockISIN
 import com.stockapp.data.model.Subscribe
-import com.stockapp.data.model.Unsubscribe
+import com.stockapp.data.model.TickerResponse
 import com.stockapp.data.network.SocketService.Companion.socketService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import com.tinder.scarlet.WebSocket
+import kotlin.math.absoluteValue
 
 const val TAG = "StockListViewModel"
 
@@ -22,8 +23,8 @@ class StockListViewModel : ViewModel(), Observable {
     private var viewModelJob = Job()
     private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
-    private var _stockList = MutableLiveData<List<Pair<String, Triple<String, Double, String>>>>()
-    val stockList: LiveData<List<Pair<String, Triple<String, Double, String>>>> get() = _stockList
+    private var _stockList = MutableLiveData<List<TickerResponse>>()
+    val stockList: LiveData<List<TickerResponse>> get() = _stockList
 
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> get() = _errorMessage
@@ -38,31 +39,37 @@ class StockListViewModel : ViewModel(), Observable {
                 .filter { it is WebSocket.Event.OnConnectionOpened<*> } // If connection is open
                 .subscribe({
                     // Subscribe to each stocks ticker
-                    enumValues<StockISIN>().forEach { socketService.subscribe(
-                        Subscribe(it)
-                    ) }
+                    enumValues<StockISIN>().forEach {
+                        socketService.subscribe(
+                            Subscribe(it)
+                        )
+                    }
                 }, { error ->
                     Log.e(TAG, "Error while observing socket ${error.cause}")
                 })
 
-            var map = mutableMapOf<String, Triple<String, Double, String>>()
-            var triple = Triple<String, Double, String>("", 0.0, "")
+            var stocksMap = mutableMapOf<String, TickerResponse>()
 
             socketService.observeTicker()   //Observe the stocks ticker
                 .subscribe({
-                    Log.d(TAG, "${it.isin} new price ${it.price}")
+//                    Log.d(TAG, "${it.isin} new price ${it.price}")
                     //Get the stock origin code
-                    var stockOrigin = StockISIN.valueOf(it.isin).value.substring(0, 2)
+                    it.origin = StockISIN.valueOf(it.isin).value.substring(0, 2)
                     //Calculate the trend of stocks
-                    if (map[it.isin]?.second != null) {
-                        if (map[it.isin]!!.second.compareTo(it.price) < 0)
-                            triple =
-                                triple.copy(first = "up", second = it.price, third = stockOrigin)
-                        else triple =
-                            triple.copy(first = "down", second = it.price, third = stockOrigin)
+                    it.trend = "flat"
+                    if (stocksMap[it.isin] != null) {
+                        val prevPrice = stocksMap[it.isin]!!.price
+                        val curPrice = it.price
+                        val priceChange = curPrice - prevPrice
+                        it.trendRatio = priceChange / prevPrice
+                        it.trend = if (priceChange > 0) "up" else "down"
+
                     }
-                    map[it.isin] = triple   //Collect the stocks data
-                    _stockList.postValue(map.toSortedMap().toList())   //Update stockList observed by StockListFragment
+
+                    stocksMap[it.isin] = it //Collect the stocks data
+                    //Update stockList observed by StockListFragment
+                    _stockList.postValue(stocksMap.toSortedMap().values.toList())
+
                 }, { error ->
                     Log.e(TAG, "Error while observing ticker ${error.cause}")
                     _errorMessage.value = error.message

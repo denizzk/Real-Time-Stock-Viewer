@@ -5,9 +5,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.stockapp.data.model.TickerResponse
 import com.stockapp.databinding.StockItemLayoutBinding
 
-class StockListAdapter : ListAdapter<Pair<String, Triple<String, Double, String>>, StockListAdapter.StockItemViewHolder>(
+class StockListAdapter : ListAdapter<TickerResponse, StockListAdapter.StockItemViewHolder>(
     ListStockDiffCallBack()
 ) {
 
@@ -19,17 +20,14 @@ class StockListAdapter : ListAdapter<Pair<String, Triple<String, Double, String>
 
     override fun onBindViewHolder(holder: StockItemViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item.first, item.second.first, item.second.second, item.second.third)
+        holder.bind(item)
     }
 
     class StockItemViewHolder private constructor(val binding: StockItemLayoutBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(stockName: String, stockTrend: String, stockPrice: Double, stockOrigin: String) {
-            binding.stockName = stockName
-            binding.stockTrend = stockTrend
-            binding.stockPrice = stockPrice
-            binding.stockOrigin = stockOrigin
+        fun bind(stock: TickerResponse) {
+            binding.stock = stock
             binding.executePendingBindings()
         }
 
@@ -43,12 +41,12 @@ class StockListAdapter : ListAdapter<Pair<String, Triple<String, Double, String>
     }
 }
 
-class ListStockDiffCallBack : DiffUtil.ItemCallback<Pair<String, Triple<String, Double, String>>>() {
-    override fun areItemsTheSame(oldItem: Pair<String, Triple<String, Double, String>>, newItem: Pair<String, Triple<String, Double, String>>): Boolean {
+class ListStockDiffCallBack : DiffUtil.ItemCallback<TickerResponse>() {
+    override fun areItemsTheSame(oldItem: TickerResponse, newItem: TickerResponse): Boolean {
         return oldItem == newItem
     }
 
-    override fun areContentsTheSame(oldItem: Pair<String, Triple<String, Double, String>>, newItem: Pair<String, Triple<String, Double, String>>): Boolean {
+    override fun areContentsTheSame(oldItem: TickerResponse, newItem: TickerResponse): Boolean {
         return oldItem == newItem
     }
 }
